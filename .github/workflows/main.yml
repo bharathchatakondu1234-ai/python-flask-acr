@@ -1,0 +1,29 @@
+name: Build and Push to ACR
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Log in to ACR
+        run: |
+          az acr login --name ${{ secrets.ACR_NAME }}
+
+      - name: Build and Push to ACR
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          # Note: Your full image name in Azure is <acr_name>.azurecr.io/<repo_name>
+          tags: ${{ secrets.ACR_NAME }}.azurecr.io/flask-docker-app:latest
