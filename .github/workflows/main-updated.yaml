@@ -1,0 +1,41 @@
+name: Build and Push to ACR
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  sonarqube:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Important for SonarQube to see git history
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+
+  build-and-push:
+    runs-on: ubuntu-latest
+    needs: sonarqube  # Only builds if Sonar check passes
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Docker login (Azure)
+        uses: docker/login-action@v3
+        with:
+          registry: myreg2026.azurecr.io
+          username: ${{ vars.AZURE_CLIENT_ID }}
+          password: ${{ secrets.AZURE_CLIENT_SECRET }}
+
+      - name: Build and Push to ACR
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: myreg2026.azurecr.io/flask-docker-app:latest
