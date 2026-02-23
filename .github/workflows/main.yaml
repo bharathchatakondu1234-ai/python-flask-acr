@@ -24,4 +24,4 @@ jobs:
           context: .
           push: true
           # Note: Your full image name in Azure is <acr_name>.azurecr.io/<repo_name>
-          tags: myreg2026.azurecr.io/flask-docker-app:latest
+          tags: myres2026.azurecr.io/flask-docker-app:latest
